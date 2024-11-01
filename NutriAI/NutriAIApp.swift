@@ -12,7 +12,8 @@ import SwiftData
 struct NutriAIApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            ChatMessage.self,
+            Profile.self, // Добавлена модель Profile
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
