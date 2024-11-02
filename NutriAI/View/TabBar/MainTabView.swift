@@ -23,6 +23,14 @@ struct MainTabView: View {
                     Image(systemName: "chart.bar.fill")
                     Text("Progress")
                 }
+            
+            // Вкладка трекер каллорий
+            CalorieTrackProfileView()
+                .tabItem {
+                    Image(systemName: "flame.fill")
+                    Text("Calorie Tracker")
+                }
+            
         }
         .accentColor(.blue)
     }
