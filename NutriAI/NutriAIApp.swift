@@ -14,6 +14,7 @@ struct NutriAIApp: App {
         let schema = Schema([
             ChatMessage.self,
             Profile.self, // Добавлена модель Profile
+            MoodRecord.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
