@@ -1,0 +1,22 @@
+# Конфигурационные файлы с API-ключами
+*.xcconfig
+
+# macOS и системные файлы
+.DS_Store
+
+# Xcode специфичные файлы
+xcuserdata
+DerivedData
+*.xccheckout
+*.xcscmblueprint
+
+# SwiftPM
+.build/
+.swiftpm/xcode/package.resolved
+
+# CocoaPods
+Pods/
+*.xcworkspace
+
+# Carthage
+Carthage/Build

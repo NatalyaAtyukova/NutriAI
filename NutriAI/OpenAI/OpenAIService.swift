@@ -1,6 +1,7 @@
 import Foundation
+
 struct OpenAIService {
-    private let apiKey = "" // Замените на ваш API-ключ
+    private let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String ?? "" // Замените на ваш API-ключ
     private let baseURL = "https://api.openai.com/v1/chat/completions"
     
     func getAdvice(prompt: String, completion: @escaping (String?) -> Void) {
@@ -16,7 +17,7 @@ struct OpenAIService {
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let parameters: [String: Any] = [
-            "model": "gpt-3.5-turbo", // Используем новую модель
+            "model": "gpt-4o-mini", // Используем новую модель
             "messages": [["role": "user", "content": prompt]],
             "max_tokens": 100
         ]

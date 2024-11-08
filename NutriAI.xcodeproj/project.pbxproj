@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C863DEE82CDE5B2300F996BA /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = C863DEE72CDE5B1E00F996BA /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		C863DEE72CDE5B1E00F996BA /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		C88B7B5C2CD3E89600E54DCE /* NutriAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NutriAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,6 +37,7 @@
 		C88B7B532CD3E89600E54DCE = {
 			isa = PBXGroup;
 			children = (
+				C863DEE72CDE5B1E00F996BA /* .gitignore */,
 				C88B7B5E2CD3E89600E54DCE /* NutriAI */,
 				C88B7B5D2CD3E89600E54DCE /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C863DEE82CDE5B2300F996BA /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,6 +134,8 @@
 /* Begin XCBuildConfiguration section */
 		C88B7B6A2CD3E89700E54DCE /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C88B7B5E2CD3E89600E54DCE /* NutriAI */;
+			baseConfigurationReferenceRelativePath = OpenAI/Secrets.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -190,6 +199,8 @@
 		};
 		C88B7B6B2CD3E89700E54DCE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C88B7B5E2CD3E89600E54DCE /* NutriAI */;
+			baseConfigurationReferenceRelativePath = OpenAI/Secrets.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;

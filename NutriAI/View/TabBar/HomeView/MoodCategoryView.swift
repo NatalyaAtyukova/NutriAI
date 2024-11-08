@@ -21,11 +21,12 @@ struct MoodCategoryView: View {
             
             Text(title)
                 .font(.subheadline)
+                .foregroundColor(.primary) // Адаптивный цвет
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(isSelected ? Color.blue.opacity(0.1) : Color.white) // Меняем фон при выборе
+        .background(isSelected ? Color.blue.opacity(0.1) : Color(UIColor.systemBackground)) // Адаптивный цвет фона
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2) // Добавляем обводку

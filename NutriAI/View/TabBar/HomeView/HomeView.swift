@@ -14,16 +14,18 @@ struct HomeView: View {
                     Text("Welcome to NutriAI")
                         .font(.largeTitle)
                         .fontWeight(.bold)
+                        .foregroundColor(.primary) // Адаптивный цвет
                         .padding(.top, 20)
 
                     Text("Track your calories and reach your goals")
                         .font(.title2)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary) // Адаптивный цвет
                         .padding(.bottom, 20)
                     
                     // Категории настроения
                     Text("Explore nutrition by mood")
                         .font(.headline)
+                        .foregroundColor(.primary) // Адаптивный цвет
                         .padding(.leading)
 
                     // Сетка для категорий настроения
@@ -49,6 +51,7 @@ struct HomeView: View {
                     // Рекомендации по питанию
                     Text("Explore nutrition options")
                         .font(.headline)
+                        .foregroundColor(.primary) // Адаптивный цвет
                         .padding(.leading)
                     
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 15) {
