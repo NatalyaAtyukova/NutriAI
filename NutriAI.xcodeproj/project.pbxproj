@@ -15,9 +15,22 @@
 		C88B7B5C2CD3E89600E54DCE /* NutriAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NutriAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C863DEEA2CDE5DF600F996BA /* Exceptions for "NutriAI" folder in "NutriAI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C88B7B5B2CD3E89600E54DCE /* NutriAI */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C88B7B5E2CD3E89600E54DCE /* NutriAI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C863DEEA2CDE5DF600F996BA /* Exceptions for "NutriAI" folder in "NutriAI" target */,
+			);
 			path = NutriAI;
 			sourceTree = "<group>";
 		};
@@ -266,6 +279,7 @@
 				DEVELOPMENT_TEAM = V57D4APK6P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NutriAI/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -295,6 +309,7 @@
 				DEVELOPMENT_TEAM = V57D4APK6P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NutriAI/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
