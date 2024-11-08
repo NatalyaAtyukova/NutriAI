@@ -1,5 +1,6 @@
 # Конфигурационные файлы с API-ключами
 *.xcconfig
+Info.plist
 
 # macOS и системные файлы
 .DS_Store
