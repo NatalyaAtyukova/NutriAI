@@ -1,29 +1,103 @@
-import UIKit
 import Foundation
-import Vision // Добавляем этот импорт для использования Vision API
+import UIKit
+import Vision
+import CoreML
 
-struct FoodRecognitionService {
+class FoodRecognitionService: ObservableObject {
     private let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String ?? ""
-    private let recipeGenerationURL = "https://api.openai.com/v1/chat/completions" // URL для OpenAI рецептов (gpt-4-turbo)
+    private let calorieEstimationURL = "https://api.openai.com/v1/chat/completions"
     
-    // Метод для распознавания объектов с помощью Vision API и получения информации о калориях
-    func recognizeFoodWithVision(image: UIImage, completion: @escaping (Result<[String], Error>) -> Void) {
-        let requestHandler = VNImageRequestHandler(cgImage: image.cgImage!, options: [:])
+    private var foodModel: VNCoreMLModel?
+    private var fruitModel: VNCoreMLModel?
+    private var vegetableModel: VNCoreMLModel?
+    
+    init() {
+        // Загрузка моделей
+        do {
+            let foodClassifierModel = try FoodClassifier(configuration: MLModelConfiguration())
+            foodModel = try VNCoreMLModel(for: foodClassifierModel.model)
+            print("Модель FoodClassifier успешно загружена")
+            
+            let fruitClassifierModel = try FruitsClassifier(configuration: MLModelConfiguration())
+            fruitModel = try VNCoreMLModel(for: fruitClassifierModel.model)
+            print("Модель FruitsClassifier успешно загружена")
+            
+            let vegetableClassifierModel = try VegetableClassifier(configuration: MLModelConfiguration())
+            vegetableModel = try VNCoreMLModel(for: vegetableClassifierModel.model)
+            print("Модель VegetableClassifier успешно загружена")
+        } catch {
+            print("Ошибка загрузки моделей: \(error)")
+        }
+    }
+    
+    func recognizeAllCategories(image: UIImage, completion: @escaping (Result<[String: [String]], Error>) -> Void) {
+        guard let foodModel = foodModel, let fruitModel = fruitModel, let vegetableModel = vegetableModel else {
+            completion(.failure(NSError(domain: "Models not loaded", code: -1, userInfo: nil)))
+            return
+        }
         
-        let request = VNClassifyImageRequest { request, error in
+        var resultsDict: [String: [String]] = ["Food": [], "Fruit": [], "Vegetable": []]
+        let dispatchGroup = DispatchGroup()
+        
+        dispatchGroup.enter()
+        recognize(image: image, with: foodModel) { result in
+            switch result {
+            case .success(let foods):
+                resultsDict["Food"] = foods
+            case .failure(let error):
+                print("Ошибка распознавания еды: \(error)")
+            }
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.enter()
+        recognize(image: image, with: fruitModel) { result in
+            switch result {
+            case .success(let fruits):
+                resultsDict["Fruit"] = fruits
+            case .failure(let error):
+                print("Ошибка распознавания фруктов: \(error)")
+            }
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.enter()
+        recognize(image: image, with: vegetableModel) { result in
+            switch result {
+            case .success(let vegetables):
+                resultsDict["Vegetable"] = vegetables
+            case .failure(let error):
+                print("Ошибка распознавания овощей: \(error)")
+            }
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            completion(.success(resultsDict))
+        }
+    }
+    
+    private func recognize(image: UIImage, with model: VNCoreMLModel, completion: @escaping (Result<[String], Error>) -> Void) {
+        let request = VNCoreMLRequest(model: model) { request, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
             
             if let results = request.results as? [VNClassificationObservation] {
-                let recognizedFoods = results.filter { $0.confidence > 0.6 }.map { $0.identifier }
-                completion(.success(recognizedFoods))
+                let recognizedItems = results.filter { $0.confidence > 0.6 }.map { $0.identifier }
+                completion(.success(recognizedItems))
             } else {
-                completion(.failure(NSError(domain: "No food recognized", code: -3, userInfo: nil)))
+                completion(.failure(NSError(domain: "No items recognized", code: -3, userInfo: nil)))
             }
         }
         
+        guard let cgImage = image.cgImage else {
+            completion(.failure(NSError(domain: "Invalid image", code: -4, userInfo: nil)))
+            return
+        }
+        
+        let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
         do {
             try requestHandler.perform([request])
         } catch {
@@ -31,10 +105,8 @@ struct FoodRecognitionService {
         }
     }
     
-    // Метод для генерации рецепта на основе ингредиентов с использованием gpt-4-turbo
-    func generateRecipe(ingredients: [String], completion: @escaping (Result<String, Error>) -> Void) {
-        guard let url = URL(string: recipeGenerationURL) else {
-            print("Invalid URL.")
+    func estimateCalories(ingredients: [String], completion: @escaping (Result<String, Error>) -> Void) {
+        guard let url = URL(string: calorieEstimationURL) else {
             completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
             return
         }
@@ -44,11 +116,11 @@ struct FoodRecognitionService {
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let prompt = "Create a recipe with these ingredients: \(ingredients.joined(separator: ", "))"
+        let prompt = "Estimate total calories for the following ingredients: \(ingredients.joined(separator: ", "))"
         let parameters: [String: Any] = [
             "model": "gpt-4-turbo",
             "messages": [["role": "user", "content": prompt]],
-            "max_tokens": 300,
+            "max_tokens": 100,
             "temperature": 0.7
         ]
         
@@ -67,7 +139,6 @@ struct FoodRecognitionService {
             
             do {
                 let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                print("Received JSON response:", json ?? "No JSON structure")
                 
                 if let choices = json?["choices"] as? [[String: Any]],
                    let message = choices.first?["message"] as? [String: Any],
@@ -80,18 +151,5 @@ struct FoodRecognitionService {
                 completion(.failure(error))
             }
         }.resume()
-    }
-    
-    // Вспомогательная функция для создания тела запроса `multipart/form-data`
-    private func createMultipartBody(data: Data, boundary: String, fieldName: String, fileName: String) -> Data {
-        var body = Data()
-        
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-        body.append(data)
-        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-        
-        return body
     }
 }

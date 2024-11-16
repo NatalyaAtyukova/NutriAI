@@ -2,8 +2,8 @@ import SwiftUI
 
 struct RecipeGeneratorView: View {
     @State private var ingredients = ""
-    @State private var recipe: String?
-    @State private var isLoading = false
+    @State private var recipe: String? // Сгенерированный рецепт
+    @State private var isLoading = false // Флаг загрузки
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -19,7 +19,6 @@ struct RecipeGeneratorView: View {
             TextField("e.g., chicken, rice, bell peppers", text: $ingredients)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.vertical)
-                .background(Color(UIColor.systemBackground)) // Background color adaptive to theme
             
             Button(action: generateRecipe) {
                 HStack {
@@ -33,7 +32,7 @@ struct RecipeGeneratorView: View {
                 .foregroundColor(.white)
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(Color.blue) // Keeping the button color blue for contrast
+                .background(Color.blue)
                 .cornerRadius(15)
                 .shadow(radius: 5)
             }
@@ -48,7 +47,7 @@ struct RecipeGeneratorView: View {
                 ScrollView {
                     Text(recipe)
                         .padding()
-                        .background(Color(UIColor.secondarySystemBackground)) // Adaptive background color
+                        .background(Color(UIColor.secondarySystemBackground))
                         .cornerRadius(10)
                         .foregroundColor(.primary)
                 }
@@ -57,7 +56,7 @@ struct RecipeGeneratorView: View {
             Spacer()
         }
         .padding()
-        .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all)) // Adaptive background color for entire view
+        .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
     }
     
     private func generateRecipe() {
@@ -66,16 +65,11 @@ struct RecipeGeneratorView: View {
             .map { $0.trimmingCharacters(in: .whitespaces) }
         
         isLoading = true
-        FoodRecognitionService().generateRecipe(ingredients: ingredientList) { result in
-            DispatchQueue.main.async {
-                self.isLoading = false
-                switch result {
-                case .success(let recipeText):
-                    self.recipe = recipeText
-                case .failure(let error):
-                    self.recipe = "Failed to generate recipe: \(error.localizedDescription)"
-                }
-            }
+
+        // Заглушка вместо интеграции с FoodRecognitionService
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { // Имитация задержки
+            self.isLoading = false
+            self.recipe = "Recipe generation for: \(ingredientList.joined(separator: ", ")) (Placeholder output)"
         }
     }
 }
@@ -83,8 +77,5 @@ struct RecipeGeneratorView: View {
 struct RecipeGeneratorView_Previews: PreviewProvider {
     static var previews: some View {
         RecipeGeneratorView()
-            .preferredColorScheme(.dark) // Preview in dark mode
-        RecipeGeneratorView()
-            .preferredColorScheme(.light) // Preview in light mode
     }
 }

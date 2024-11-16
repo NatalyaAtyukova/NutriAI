@@ -1,12 +1,13 @@
 import SwiftUI
-import PhotosUI
-import Vision
 
 struct FoodRecognitionSection: View {
-    @State private var selectedImage: UIImage? // Изображение, выбранное пользователем
+    @StateObject private var recognitionService = FoodRecognitionService()
+    @State private var selectedImage: UIImage?
     @State private var isShowingImagePicker = false
-    @State private var recognizedFoods: [String] = [] // Распознанные продукты
-    @State private var recipe: String? // Сгенерированный рецепт
+    @State private var recognizedFoods: [String] = []
+    @State private var recognizedFruits: [String] = []
+    @State private var recognizedVegetables: [String] = []
+    @State private var totalCalories: Int = 0
     @State private var isLoading = false
 
     var body: some View {
@@ -14,11 +15,11 @@ struct FoodRecognitionSection: View {
             Text("Food Recognition")
                 .font(.title2)
                 .fontWeight(.semibold)
-                .foregroundColor(.primary) // Адаптивный цвет
+                .foregroundColor(.primary)
             
             Text("Take a photo of your meal and let NutriAI identify the foods and estimate the calories.")
                 .font(.subheadline)
-                .foregroundColor(.secondary) // Адаптивный цвет
+                .foregroundColor(.secondary)
                 .lineSpacing(5)
             
             Button(action: {
@@ -45,24 +46,29 @@ struct FoodRecognitionSection: View {
             .sheet(isPresented: $isShowingImagePicker, content: {
                 ImagePicker(selectedImage: $selectedImage, onImagePicked: analyzeImage)
             })
+            .disabled(isLoading)
             
-            if !recognizedFoods.isEmpty {
-                Text("Recognized Ingredients: \(recognizedFoods.joined(separator: ", "))")
-                    .font(.headline)
-                    .foregroundColor(.primary) // Адаптивный цвет
-                    .padding(.top)
-                
-                Button("Generate Recipe") {
-                    generateRecipe()
+            if !recognizedFoods.isEmpty || !recognizedFruits.isEmpty || !recognizedVegetables.isEmpty {
+                VStack(alignment: .leading, spacing: 5) {
+                    if !recognizedFoods.isEmpty {
+                        Text("Recognized Foods: \(recognizedFoods.joined(separator: ", "))")
+                    }
+                    if !recognizedFruits.isEmpty {
+                        Text("Recognized Fruits: \(recognizedFruits.joined(separator: ", "))")
+                    }
+                    if !recognizedVegetables.isEmpty {
+                        Text("Recognized Vegetables: \(recognizedVegetables.joined(separator: ", "))")
+                    }
                 }
-                .foregroundColor(.blue) // Адаптивный цвет кнопки для рецепта
-                .padding()
+                .font(.headline)
+                .foregroundColor(.primary)
+                .padding(.top)
             }
             
-            if let recipe = recipe {
-                Text("Recipe: \(recipe)")
+            if totalCalories > 0 {
+                Text("Total Calories: \(totalCalories) kcal")
                     .font(.headline)
-                    .foregroundColor(.blue) // Адаптивный цвет
+                    .foregroundColor(.green)
                     .padding(.top)
             }
 
@@ -74,7 +80,7 @@ struct FoodRecognitionSection: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 15)
-                .fill(Color(UIColor.systemBackground)) // Адаптивный цвет фона
+                .fill(Color(UIColor.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
         )
         .padding(.horizontal)
@@ -82,32 +88,59 @@ struct FoodRecognitionSection: View {
     }
     
     private func analyzeImage() {
-        guard let selectedImage = selectedImage else { return }
+        guard let selectedImage = selectedImage else {
+            print("Изображение не выбрано")
+            return
+        }
         
         isLoading = true
-        FoodRecognitionService().recognizeFoodWithVision(image: selectedImage) { result in
+        recognitionService.recognizeAllCategories(image: selectedImage) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
-                case .success(let foods):
-                    recognizedFoods = foods
+                case .success(let categories):
+                    recognizedFoods = categories["Food"] ?? []
+                    recognizedFruits = categories["Fruit"] ?? []
+                    recognizedVegetables = categories["Vegetable"] ?? []
+                    
+                    let allRecognizedItems = recognizedFoods + recognizedFruits + recognizedVegetables
+                    calculateCaloriesUsingOpenAI(recognizedItems: allRecognizedItems) // Подсчет калорий
+                    
+                    print("Распознанные продукты: \(recognizedFoods)")
+                    print("Распознанные фрукты: \(recognizedFruits)")
+                    print("Распознанные овощи: \(recognizedVegetables)")
                 case .failure(let error):
-                    recognizedFoods = ["Error: \(error.localizedDescription)"]
+                    recognizedFoods = []
+                    recognizedFruits = []
+                    recognizedVegetables = []
+                    totalCalories = 0
+                    print("Ошибка распознавания: \(error.localizedDescription)")
                 }
             }
         }
     }
-    
-    private func generateRecipe() {
+
+    private func calculateCaloriesUsingOpenAI(recognizedItems: [String]) {
+        guard !recognizedItems.isEmpty else {
+            totalCalories = 0
+            return
+        }
+        
         isLoading = true
-        FoodRecognitionService().generateRecipe(ingredients: recognizedFoods) { result in
+        recognitionService.estimateCalories(ingredients: recognizedItems) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
-                case .success(let generatedRecipe):
-                    recipe = generatedRecipe
+                case .success(let calorieEstimate):
+                    if let calories = Int(calorieEstimate.filter("0123456789".contains)), calories > 0 {
+                        totalCalories = calories
+                    } else {
+                        totalCalories = 0
+                        print("Некорректный ответ OpenAI: \(calorieEstimate)")
+                    }
                 case .failure(let error):
-                    recipe = "Error: \(error.localizedDescription)"
+                    totalCalories = 0
+                    print("Ошибка подсчета калорий: \(error.localizedDescription)")
                 }
             }
         }
