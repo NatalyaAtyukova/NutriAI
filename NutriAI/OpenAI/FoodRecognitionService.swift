@@ -7,28 +7,38 @@ class FoodRecognitionService: ObservableObject {
     private let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String ?? ""
     private let calorieEstimationURL = "https://api.openai.com/v1/chat/completions"
     
-    private var foodModel: VNCoreMLModel?
-    private var fruitModel: VNCoreMLModel?
-    private var vegetableModel: VNCoreMLModel?
-    
-    init() {
-        // Загрузка моделей
+    private lazy var foodModel: VNCoreMLModel? = {
         do {
-            let foodClassifierModel = try FoodClassifier(configuration: MLModelConfiguration())
-            foodModel = try VNCoreMLModel(for: foodClassifierModel.model)
+            let model = try FoodClassifier(configuration: MLModelConfiguration())
             print("Модель FoodClassifier успешно загружена")
-            
-            let fruitClassifierModel = try FruitsClassifier(configuration: MLModelConfiguration())
-            fruitModel = try VNCoreMLModel(for: fruitClassifierModel.model)
-            print("Модель FruitsClassifier успешно загружена")
-            
-            let vegetableClassifierModel = try VegetableClassifier(configuration: MLModelConfiguration())
-            vegetableModel = try VNCoreMLModel(for: vegetableClassifierModel.model)
-            print("Модель VegetableClassifier успешно загружена")
+            return try VNCoreMLModel(for: model.model)
         } catch {
-            print("Ошибка загрузки моделей: \(error)")
+            print("Ошибка загрузки модели FoodClassifier: \(error)")
+            return nil
         }
-    }
+    }()
+    
+    private lazy var fruitModel: VNCoreMLModel? = {
+        do {
+            let model = try FruitsClassifier(configuration: MLModelConfiguration())
+            print("Модель FruitsClassifier успешно загружена")
+            return try VNCoreMLModel(for: model.model)
+        } catch {
+            print("Ошибка загрузки модели FruitsClassifier: \(error)")
+            return nil
+        }
+    }()
+    
+    private lazy var vegetableModel: VNCoreMLModel? = {
+        do {
+            let model = try VegetableClassifier(configuration: MLModelConfiguration())
+            print("Модель VegetableClassifier успешно загружена")
+            return try VNCoreMLModel(for: model.model)
+        } catch {
+            print("Ошибка загрузки модели VegetableClassifier: \(error)")
+            return nil
+        }
+    }()
     
     func recognizeAllCategories(image: UIImage, completion: @escaping (Result<[String: [String]], Error>) -> Void) {
         guard let foodModel = foodModel, let fruitModel = fruitModel, let vegetableModel = vegetableModel else {
@@ -106,6 +116,11 @@ class FoodRecognitionService: ObservableObject {
     }
     
     func estimateCalories(ingredients: [String], completion: @escaping (Result<String, Error>) -> Void) {
+        guard !ingredients.isEmpty else {
+            completion(.success("0"))
+            return
+        }
+        
         guard let url = URL(string: calorieEstimationURL) else {
             completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
             return
@@ -143,6 +158,7 @@ class FoodRecognitionService: ObservableObject {
                 if let choices = json?["choices"] as? [[String: Any]],
                    let message = choices.first?["message"] as? [String: Any],
                    let content = message["content"] as? String {
+                    print("OpenAI response: \(content)") // Логирование ответа
                     completion(.success(content.trimmingCharacters(in: .whitespacesAndNewlines)))
                 } else {
                     completion(.failure(NSError(domain: "Unexpected JSON structure", code: -3, userInfo: nil)))
@@ -152,4 +168,62 @@ class FoodRecognitionService: ObservableObject {
             }
         }.resume()
     }
+    
+    func generateDailyMealPlan(for category: String, completion: @escaping (Result<[String], Error>) -> Void) {
+            guard let url = URL(string: calorieEstimationURL) else {
+                completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let prompt = """
+            Create a detailed one-day meal plan for a \(category) diet. Include breakfast, lunch, snack, and dinner. Format:
+            - Breakfast: ...
+            - Lunch: ...
+            - Snack: ...
+            - Dinner: ...
+            """
+            let parameters: [String: Any] = [
+                "model": "gpt-4-turbo",
+                "messages": [["role": "user", "content": prompt]],
+                "max_tokens": 200,
+                "temperature": 0.7
+            ]
+            
+            request.httpBody = try? JSONSerialization.data(withJSONObject: parameters)
+            
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let data = data else {
+                    completion(.failure(NSError(domain: "No data received", code: -2, userInfo: nil)))
+                    return
+                }
+                
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                    
+                    if let choices = json?["choices"] as? [[String: Any]],
+                       let message = choices.first?["message"] as? [String: Any],
+                       let content = message["content"] as? String {
+                        let meals = content
+                            .components(separatedBy: "\n")
+                            .filter { !$0.isEmpty }
+                            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                        completion(.success(meals))
+                    } else {
+                        completion(.failure(NSError(domain: "Unexpected JSON structure", code: -3, userInfo: nil)))
+                    }
+                } catch {
+                    completion(.failure(error))
+                }
+            }.resume()
+        }
 }
