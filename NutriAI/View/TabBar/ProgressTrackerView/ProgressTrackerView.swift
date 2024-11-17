@@ -1,7 +1,15 @@
 import SwiftUI
+import HealthKit
 
 struct ProgressTrackerView: View {
-    let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    @State private var weeklyCalories: [Double] = Array(repeating: 0, count: 7) // Реальные данные из HealthKit
+    @State private var goalCalories: Double = UserDefaults.standard.double(forKey: "goalCalories") // Целевая норма калорий
+    @State private var currentCalories: Double = 0 // Потребленные калории за текущий день
+    @State private var isLoading = false // Флаг загрузки данных
+    @State private var isSettingGoal = false // Показ модального окна для установки цели
+
+    private let days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    private let healthKitManager = HealthKitManager()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -25,7 +33,7 @@ struct ProgressTrackerView: View {
                                     startPoint: .top,
                                     endPoint: .bottom
                                 ))
-                                .frame(width: 25, height: CGFloat.random(in: 50...150))
+                                .frame(width: 25, height: CGFloat(weeklyCalories[day] / goalCalories * 150))
                             
                             Text(days[day])
                                 .font(.caption)
@@ -38,7 +46,7 @@ struct ProgressTrackerView: View {
                 .cornerRadius(15)
             }
             .padding(.horizontal)
-            
+
             // Цель по питанию
             VStack(alignment: .leading, spacing: 10) {
                 Text("Nutrition goal")
@@ -47,10 +55,10 @@ struct ProgressTrackerView: View {
                 
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Track")
+                        Text("Goal")
                             .font(.subheadline)
                             .foregroundColor(.gray)
-                        Text("2,500")
+                        Text("\(Int(goalCalories)) kcal")
                             .font(.title)
                             .fontWeight(.bold)
                             .foregroundColor(.blue)
@@ -61,10 +69,10 @@ struct ProgressTrackerView: View {
                     .cornerRadius(10)
                     
                     VStack(alignment: .leading) {
-                        Text("Profile")
+                        Text("Today")
                             .font(.subheadline)
                             .foregroundColor(.gray)
-                        Text("1,800")
+                        Text("\(Int(currentCalories)) kcal")
                             .font(.title)
                             .fontWeight(.bold)
                             .foregroundColor(.green)
@@ -77,7 +85,7 @@ struct ProgressTrackerView: View {
                 .padding(.horizontal)
 
                 Button(action: {
-                    // Действие для установки цели
+                    isSettingGoal = true // Открытие модального окна
                 }) {
                     Text("Set Goal")
                         .font(.headline)
@@ -98,8 +106,31 @@ struct ProgressTrackerView: View {
             Spacer()
         }
         .padding(.top)
+        .sheet(isPresented: $isSettingGoal) {
+            SetGoalView(goalCalories: $goalCalories)
+        }
+        .onAppear(perform: fetchCalories) // Загрузка данных при появлении
+    }
+
+    private func fetchCalories() {
+        isLoading = true
+
+        // Получение данных за текущую неделю
+        healthKitManager.fetchWeeklyCalories { result, error in
+            DispatchQueue.main.async {
+                isLoading = false
+                if let result = result {
+                    self.weeklyCalories = result
+                    self.currentCalories = result[Calendar.current.component(.weekday, from: Date()) - 1]
+                } else {
+                    print("Ошибка при получении данных: \(error?.localizedDescription ?? "Неизвестная ошибка")")
+                }
+            }
+        }
     }
 }
+
+
 
 struct ProgressTrackerView_Previews: PreviewProvider {
     static var previews: some View {
