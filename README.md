@@ -88,3 +88,18 @@ git push origin feature/your-feature
 
 
 	5.	Submit a pull request.
+
+ Screenshoots:
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 03 03" src="https://github.com/user-attachments/assets/ca99b028-0170-4cd3-a628-3005cee587b9">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 03 00" src="https://github.com/user-attachments/assets/5acbf0ff-2232-4ab7-9582-01ee235b8168">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 02 54" src="https://github.com/user-attachments/assets/5e74dc96-7f60-42c7-873a-7c41fce7fca2">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 02 52" src="https://github.com/user-attachments/assets/3454b81a-72fe-4bb1-ad31-11be38d8195d">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 02 38" src="https://github.com/user-attachments/assets/1ea34265-d04e-4d7f-be48-030fa9c89dde">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 02 35" src="https://github.com/user-attachments/assets/565c64f7-72ae-455d-b166-692d99298a7e">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 01 47" src="https://github.com/user-attachments/assets/dd83ca89-8031-4fdc-a3ab-f40398422644">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 01 36" src="https://github.com/user-attachments/assets/1af3bfea-e00c-4538-bbaf-7b90be7a2177">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 01 33" src="https://github.com/user-attachments/assets/1773a615-9e5d-4ab5-9b33-27e8c588061e">
+<img width="458" alt="Снимок экрана 2024-11-19 в 19 01 29" src="https://github.com/user-attachments/assets/3a144a8c-9ec8-49b6-97af-5bcdb2772d22">
+
+
+
