@@ -88,8 +88,10 @@ git push origin feature/your-feature
 
 
 	5.	Submit a pull request.
+ 
 
  Screenshoots:
+ 
 <img width="458" alt="Снимок экрана 2024-11-19 в 19 03 03" src="https://github.com/user-attachments/assets/ca99b028-0170-4cd3-a628-3005cee587b9">
 <img width="458" alt="Снимок экрана 2024-11-19 в 19 03 00" src="https://github.com/user-attachments/assets/5acbf0ff-2232-4ab7-9582-01ee235b8168">
 <img width="458" alt="Снимок экрана 2024-11-19 в 19 02 54" src="https://github.com/user-attachments/assets/5e74dc96-7f60-42c7-873a-7c41fce7fca2">
